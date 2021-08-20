@@ -1,6 +1,9 @@
-2021-08-19 16:12:51,010:DEBUG:discord.client: on_connect has successfully been registered as an event
-2021-08-19 16:12:51,010:DEBUG:discord.client: on_ready has successfully been registered as an event
-2021-08-19 16:12:51,010:DEBUG:discord.client: on_disconnect has successfully been registered as an event
-2021-08-19 16:12:51,011:DEBUG:discord.client: on_member_join has successfully been registered as an event
-2021-08-19 16:12:51,011:DEBUG:discord.client: on_message has successfully been registered as an event
-2021-08-19 16:12:51,011:INFO:discord.client: logging in using static token
+2021-08-20 14:36:37,522:DEBUG:discord.client: on_connect has successfully been registered as an event
+2021-08-20 14:36:37,523:DEBUG:discord.client: on_ready has successfully been registered as an event
+2021-08-20 14:36:37,523:DEBUG:discord.client: on_disconnect has successfully been registered as an event
+2021-08-20 14:36:37,523:DEBUG:discord.client: on_member_join has successfully been registered as an event
+2021-08-20 14:36:37,523:INFO:discord.client: logging in using static token
+2021-08-20 14:36:37,794:DEBUG:discord.http: GET https://discord.com/api/v7/users/@me with None has returned 200
+2021-08-20 14:36:37,794:DEBUG:discord.http: GET https://discord.com/api/v7/users/@me has received {'id': '877289842365583370', 'username': "Rage's DKP", 'avatar': 'd1db7c7cc94c41f932d035ea345a21c0', 'discriminator': '4297', 'public_flags': 0, 'flags': 0, 'bot': True, 'banner': None, 'banner_color': None, 'accent_color': None, 'bio': '', 'locale': 'en-US', 'mfa_enabled': False, 'email': None, 'verified': True}
+2021-08-20 14:36:37,819:DEBUG:discord.http: GET https://discord.com/api/v7/gateway with None has returned 200
+2021-08-20 14:36:37,819:DEBUG:discord.http: GET https://discord.com/api/v7/gateway has received {'url': 'wss://gateway.discord.gg'}
