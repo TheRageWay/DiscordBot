@@ -13,6 +13,7 @@ import asyncio
 import discord
 import logging
 from discord.ext import commands
+import sqlite3
 
 #Variables
 intents = discord.Intents(messages=True, guilds=True)
@@ -42,7 +43,7 @@ async def ping(ctx):
 
 #Help Command
 @bot.command()
-async def random(ctx):
+async def helpme(ctx):
 
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
@@ -101,6 +102,6 @@ async def on_disconnect():
 async def on_member_join(member):
         for channel in member.guild.channels:
                 if str(channel) == 'welcome':
-                        await channel.send(f'Welcome to the Warband {member.mention}')
+                        await channel.send(f'Welcome to the Warband {member.mention} To get started using the DKP system, please use the #dkp channel and use the $helpme command.')
 
 bot.run(token)
