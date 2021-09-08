@@ -10,6 +10,8 @@ def read_token():
 
 #Imports
 import asyncio
+from sqlite3.dbapi2 import Cursor
+from typing_extensions import Concatenate
 import discord
 import logging
 from discord.ext import commands
@@ -25,6 +27,7 @@ bot = commands.Bot(command_prefix='$', case_insensitive=True, intents=intents)
 token = read_token()
 logger = logging.getLogger('discord')
 handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+
 
 #Debug Logging
 logger.setLevel(logging.DEBUG)
@@ -82,6 +85,70 @@ async def hello(ctx):
 
         if str(ctx.channel) in channels:
                 await ctx.channel.send("Hi")
+
+#Add Points Command
+@bot.command()
+async def addpoints(ctx, arg1, arg2):
+        id = bot.get_guild(877528142909161572)
+        arg1 = int(arg1)
+        channels = ['dkp']
+        #print(ctx.message.author.id)
+ 
+        if ctx.message.author.guild_permissions.send_messages:
+                if str(ctx.channel) in channels:
+                        db = sqlite3.connect('Test.sqlite')
+                        cursor = db.cursor()
+                        cursor.execute(f"Select Points FROM Test WHERE User_ID = {ctx.message.author.id}")
+                        result = cursor.fetchone()
+                        points = result[0]
+                        secondUser = arg2.mention
+                        print(secondUser)
+                        if result is None:
+                                sql1 = ("INSERT INTO Test(Guild_iD, Points, User_ID) VALUES(?,?,?)")
+                                val1 = (ctx.guild.id,0,ctx.message.author.id)
+                        #cursor.execute(sql1,val1)
+                        if isinstance(arg1,int) == False:
+                                await ctx.channel.send(f'{arg1} is an invalid number')     
+                        else:
+                                sql = ("UPDATE Test SET Points = ? WHERE User_ID = ?")
+                                val = (arg1 + points,ctx.message.author.id) 
+                                await ctx.channel.send(f'{ctx.message.author} Has {arg1+points} available points') 
+                        cursor.execute(sql,val) 
+                        db.commit()
+                        cursor.close()
+                        db.close()
+
+#Add Points Command
+@bot.command()
+async def removepoints(ctx, arg1, arg2):
+        id = bot.get_guild(877528142909161572)
+        arg1 = int(arg1)
+        channels = ['dkp']
+        #print(ctx.message.author.id)
+ 
+        if ctx.message.author.guild_permissions.send_messages:
+                if str(ctx.channel) in channels:
+                        db = sqlite3.connect('Test.sqlite')
+                        cursor = db.cursor()
+                        cursor.execute(f"Select Points FROM Test WHERE User_ID = {ctx.message.author.id}")
+                        result = cursor.fetchone()
+                        points = result[0]
+                        secondUser = arg2.mention
+                        check = points - arg1
+                        if result is None:
+                                await ctx.channel.send(f'That user has no points.')
+                        #cursor.execute(sql1,val1)
+                        if isinstance(arg1,int) == False & check > 0:
+                                await ctx.channel.send(f'{arg1} is an invalid number')     
+                        else:
+                                sql = ("UPDATE Test SET Points = ? WHERE User_ID = ?")
+                                val = (points - arg1,ctx.message.author.id) 
+                                await ctx.channel.send(f'{ctx.message.author} Has {arg1+points} available points.') 
+                        cursor.execute(sql,val) 
+                        db.commit()
+                        cursor.close()
+                        db.close()
+                               
 #on_connect
 @bot.event
 async def on_connect():
@@ -90,7 +157,16 @@ async def on_connect():
 #on_ready
 @bot.event
 async def on_ready():
+        db = sqlite3.connect('Test.sqlite')
+        cursor = db.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Test(
+                guild_id Text,
+                points Int,
+                user_ID Int
+                )
+                ''')
         print('DKP system is running')
+  
 
 #on_disconnect
 @bot.event
