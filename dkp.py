@@ -71,6 +71,8 @@ async def helpme(ctx):
                 embed.add_field(name='$AddItem <Item Name> <Item Cost>', value='Adds an item to the store')
                 embed.add_field(name='$BuyItem <ItemName>', value='Buy an Item from the store')
                 embed.add_field(name='$ItemCost <ItemName>', value='Total cost for an item')
+                embed.add_field(name='$Store', value='Displayes the items within the store.')
+                embed.add_field(name='$MyInventory', value='Displays the items within your inventory')
                 await ctx.channel.send(content=None, embed=embed)
 
 #Users Command
@@ -232,9 +234,9 @@ async def AddItem(ctx, item ,cost):
                                 db.close()
                                 await ctx.channel.send(f'{item} Has been added for {cost} points.')
 
-#AddItems Command
+#RemoveItem Command
 @bot.command()
-async def BuyItem(ctx, item):
+async def RemoveItem(ctx, item):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
  
@@ -243,11 +245,74 @@ async def BuyItem(ctx, item):
                         db = sqlite3.connect('Test.sqlite')
                         cursor = db.cursor()
                         cursor.execute(f"Select cost FROM Items WHERE ItemName = '{item}'")
+                        result = cursor.fetchone()
+                        if result is None: 
+                                await ctx.channel.send(f'That item does not Exists.')
+                        elif result is not None:
+                                sql = (f"Delete FROM Items Where ItemName = ?")
+                                val = (item)
+                                cursor.execute(sql,val)
+                                print(f"{item}' deleted'")
+                                db.commit
+                                cursor.close()
+                                db.close
+
+#store command
+@bot.command()
+async def Store(ctx): 
+        channels = ['dkp']
+        if ctx.message.author.guild_permissions.send_messages:
+                if str(ctx.channel) in channels:
+                        db = sqlite3.connect('Test.sqlite')
+                        cursor = db.cursor()
+                        cursor.execute(f"Select ItemName, cost FROM Items")
+                        result = cursor.fetchall()
+                        s = ['ItemName        cost']
+# This needs to be adjusted based on expected range of values or   calculated dynamically
+                        for data in result:
+                                s.append('   '.join([str(item).center(10, ' ') for item in data]))
+                        d = '```'+'\n'.join(s) + '```'
+                        embed = discord.Embed(title = 'Store Inventory', colour=discord.Colour(0x0ECA14), description = d)
+                        embed.set_thumbnail(url='https://cdn.discordapp.com/icons/184864850059460609/293ef38d13267880ba274086a16e7593.png?size=32')
+                        await ctx.channel.send(embed = embed)
+
+#MyInventory Command
+@bot.command()
+async def MyInventory(ctx):
+    # Example dataset here! 
+        channels = ['dkp']
+        if ctx.message.author.guild_permissions.send_messages:
+                if str(ctx.channel) in channels:
+                        db = sqlite3.connect('Test.sqlite')
+                        cursor = db.cursor()
+                        cursor.execute(f"Select ItemName, Count FROM Inventory Where user_ID = {ctx.message.author.id}")
+                        result = cursor.fetchall()
+                        s = ['ItemName        Count']
+                        for data in result:
+                                s.append('   '.join([str(item).center(10, ' ') for item in data]))
+                        d = '```'+'\n'.join(s) + '```'
+                        embed = discord.Embed(title = 'Personal Inventory', colour=discord.Colour(0x0ECA14), description = d)
+                        embed.set_thumbnail(url='https://cdn.discordapp.com/icons/184864850059460609/293ef38d13267880ba274086a16e7593.png?size=32')
+                        await ctx.channel.send(embed = embed)
+                        
+
+#BuyItems Command
+@bot.command()
+async def BuyItem(ctx, item):
+        id = bot.get_guild(877528142909161572)
+        channels = ['dkp']
+ 
+        if ctx.message.author.guild_permissions.send_messages:
+                if str(ctx.channel) in channels:
+                        newcount = 0
+                        db = sqlite3.connect('Test.sqlite')
+                        cursor = db.cursor()
+                        cursor.execute(f"Select cost FROM Items WHERE ItemName = '{item}'")
                         price = cursor.fetchone()
                         cursor.execute(f"Select Points FROM Test WHERE User_ID = {ctx.message.author.id}")
                         points = cursor.fetchone()
-                        print(price[0])
-                        print(points[0])
+                        cursor.execute(f"Select Count FROM Inventory WHERE ItemName = '{item}' AND User_ID = {ctx.message.author.id}")
+                        itemcount = cursor.fetchone()
                         balance = points[0] - price[0]
                         if price is None:
                                 await ctx.channel.send(f'{item} Has Not Been Added To The Store.')
@@ -260,9 +325,22 @@ async def BuyItem(ctx, item):
                                 val = (balance,ctx.message.author.id) 
                                 cursor.execute(sql,val) 
                                 db.commit()
+                                if itemcount is None:
+                                        newcount = 1
+                                        sql = ("INSERT INTO Inventory(Guild_iD,Count,ItemName,user_ID) VALUES(?,?,?,?)")
+                                        val = (ctx.guild.id,newcount,item,ctx.message.author.id)
+                                        cursor.execute(sql,val)  
+                                        db.commit()
+                                else:   
+                                        newcount = itemcount[0]+1
+                                        print(newcount)
+                                        sql = ("UPDATE Inventory SET Count = ? WHERE ((User_ID = ?) AND (ItemName = ?))")
+                                        val = (newcount,ctx.message.author.id,item) 
+                                        cursor.execute(sql,val) 
+                                        db.commit()
                                 cursor.close()
                                 db.close()
-                                await ctx.channel.send(f'{ctx.message.author.name} has purchased {item} and has {balance} remaining points left.') 
+                                await ctx.channel.send(f'{ctx.message.author.name} has purchased {item} and has {balance} remaining points left. They now have {newcount} {item}(s)') 
 #ItemCost Command
 @bot.command()
 async def ItemCost(ctx, item):
@@ -329,7 +407,20 @@ async def on_ready():
         db.commit()
         cursor.close()
         db.close()
+        db = sqlite3.connect('Test.sqlite')
+        cursor = db.cursor()
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Inventory( 
+                guild_id TEXT,
+                Count INTEGER, 
+                ItemName TEXT, 
+                user_ID INTEGER
+                )
+                ''')
+        db.commit()
+        cursor.close()
+        db.close()
         print('DKP system is running')
+
 
 
 #on_disconnect
