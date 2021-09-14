@@ -63,16 +63,16 @@ async def helpme(ctx):
                 embed.add_field(name='$hello', value='Greets the user')
                 embed.add_field(name='$users', value='Shows how many users are in the server')
                 embed.add_field(name='$ping', value='ping the bot to see if it is online')
-                embed.add_field(name='$AddPoints <Amount> <UsersName>', value='Adds points to the user ')
+                embed.add_field(name='$AddPoints <Amount> <UsersName> <"Reason">', value='Adds points to the user ')
                 embed.add_field(name='$ShowPoints <UsersName>', value='Shows users how many points they have ')
-                embed.add_field(name='$RemovePoints <Amount> <UsersName>', value='Removes points from the user ')
-                embed.add_field(name='$RemoveAllPoints <UsersName>', value='Removes all points from the user ')
-                embed.add_field(name='$UserPoints <UsersName>', value='Points for the specified user ')
-                embed.add_field(name='$AddItem <Item Name> <Item Cost>', value='Adds an item to the store')
-                embed.add_field(name='$BuyItem <ItemName>', value='Buy an Item from the store')
-                embed.add_field(name='$ItemCost <ItemName>', value='Total cost for an item')
-                embed.add_field(name='$Store', value='Displayes the items within the store.')
-                embed.add_field(name='$MyInventory', value='Displays the items within your inventory')
+                embed.add_field(name='$RemovePoints <Amount> <UsersName>', value='Allows admins to remove points from the user ')
+                embed.add_field(name='$RemoveAllPoints <UsersName>', value='Allows admins to remove all points from the user ')
+                #embed.add_field(name='$UserPoints <UsersName>', value='Points for the specified user ')
+                #embed.add_field(name='$AddItem <Item Name> <Item Cost>', value='Adds an item to the store')
+                #embed.add_field(name='$BuyItem <ItemName>', value='Buy an Item from the store')
+                #embed.add_field(name='$ItemCost <ItemName>', value='Total cost for an item')
+                #embed.add_field(name='$Store', value='Displayes the items within the store.')
+                #embed.add_field(name='$MyInventory', value='Displays the items within your inventory')
                 await ctx.channel.send(content=None, embed=embed)
 
 #Users Command
@@ -97,43 +97,50 @@ async def hello(ctx):
 
 #Add Points Command
 @bot.command()
-async def addpoints(ctx, arg1, user: discord.Member):
+async def addpoints(ctx, arg1, user: discord.Member,Disc):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
         #print(ctx.message.author.id)
         #print(format(user.id))
-        if ctx.message.author.guild_permissions.send_messages:
-                if str(ctx.channel) in channels:
+        if str(ctx.channel) in channels:
+                db = sqlite3.connect('Test.sqlite')
+                cursor = db.cursor()
+                cursor.execute(f"Select Points FROM Points WHERE User_ID = {user.id}")
+                result = cursor.fetchone()
+                print(result)
+                if result is None:
+                        sql1 = ("INSERT INTO Points(Guild_iD, Points, User_ID) VALUES(?,?,?)")
+                        val1 = (ctx.guild.id,0,user.id)
+                        cursor.execute(sql1,val1)
+                        db.commit()
+                        cursor.close()
+                        db.close()
                         db = sqlite3.connect('Test.sqlite')
                         cursor = db.cursor()
-                        cursor.execute(f"Select Points FROM Test WHERE User_ID = {user.id}")
+                        cursor.execute(f"Select Points FROM Points WHERE User_ID = {user.id}")
                         result = cursor.fetchone()
-                        print(result)
-                        if result == None:
-                                sql1 = ("INSERT INTO Test(Guild_iD, Points, User_ID) VALUES(?,?,?)")
-                                val1 = (ctx.guild.id,0,user.id)
-                                cursor.execute(sql1,val1)
-                                db.commit()
-                                cursor.close()
-                                db.close()
-                                db = sqlite3.connect('Test.sqlite')
-                                cursor = db.cursor()
-                                cursor.execute(f"Select Points FROM Test WHERE User_ID = {user.id}")
-                                result = cursor.fetchone()
-                                print('Added')
-                        if int(arg1) != int:
-                                arg1 = int(arg1)
-                                points = result[0]
-                                sql = ("UPDATE Test SET Points = ? WHERE User_ID = ?")
+                        print('Added')
+                if int(arg1) != int:
+                        arg1 = int(arg1)
+                        points = result[0]
+                        if arg1 < 100001:
+                                sql = ("UPDATE Points SET Points = ? WHERE User_ID = ?")
                                 val = (arg1 + points,user.id) 
                                 await ctx.channel.send(f'{user.name} Has {arg1+points} points available.') 
                                 cursor.execute(sql,val) 
                                 db.commit()
                                 cursor.close()
-                                db.close()     
+                                db.close()
+                                channel = bot.get_channel(887371257149018153)
+                                await channel.send(f"{user.display_name} has been given {arg1} for '{Disc}'")
                         else:
-                                await ctx.channel.send(f'{arg1} is an invalid number.') 
-                                
+                                await ctx.channel.send(f'{user.name}, are you abusing your power??')
+                else:
+                        await ctx.channel.send(f'{arg1} is an invalid number.') 
+
+
+
+
 
 #Remove Points Command
 @bot.command()
@@ -141,11 +148,11 @@ async def removepoints(ctx, arg1: str, user: discord.Member):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
  
-        if ctx.message.author.guild_permissions.send_messages:
+        if ctx.message.author.guild_permissions.manage_roles:
                 if str(ctx.channel) in channels:
                         db = sqlite3.connect('Test.sqlite')
                         cursor = db.cursor()
-                        cursor.execute(f"Select Points FROM Test WHERE User_ID = {user.id}")
+                        cursor.execute(f"Select Points FROM Points WHERE User_ID = {user.id}")
                         result = cursor.fetchone()
                         points = result[0]
                         arg1 = int(arg1)
@@ -153,7 +160,7 @@ async def removepoints(ctx, arg1: str, user: discord.Member):
                         if result is not None:
                                 print(user.id)
                                 print(ctx.message.author.id)
-                                sql = ("UPDATE Test SET Points = ? WHERE User_ID = ?")
+                                sql = ("UPDATE Points SET Points = ? WHERE User_ID = ?")
                                 val = (check,user.id) 
                                 await ctx.channel.send(f'{user.name} Has {check} available points.') 
                                 cursor.execute(sql,val) 
@@ -170,16 +177,16 @@ async def removeallpoints(ctx, user: discord.Member):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
  
-        if ctx.message.author.guild_permissions.send_messages:
+        if ctx.message.author.guild_permissions.manage_roles:
                 if str(ctx.channel) in channels:
                         db = sqlite3.connect('Test.sqlite')
                         cursor = db.cursor()
-                        cursor.execute(f"Select Points FROM Test WHERE User_ID = {user.id}")
+                        cursor.execute(f"Select Points FROM Points WHERE User_ID = {user.id}")
                         result = cursor.fetchone()
                         points = result[0]
                         check = points - points
                         if result is not None:
-                                sql = ("UPDATE Test SET Points = ? WHERE User_ID = ?")
+                                sql = ("UPDATE Points SET Points = ? WHERE User_ID = ?")
                                 val = (check,ctx.message.author.id) 
                                 await ctx.channel.send(f'{user.name} Has {check} available points.') 
                                 cursor.execute(sql,val) 
@@ -196,22 +203,21 @@ async def removeallpoints(ctx, user: discord.Member):
 async def Showpoints(ctx, user: discord.Member):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
- 
-        if ctx.message.author.guild_permissions.send_messages:
-                if str(ctx.channel) in channels:
-                        db = sqlite3.connect('Test.sqlite')
-                        cursor = db.cursor()
-                        cursor.execute(f"Select Points FROM Test WHERE User_ID = {ctx.message.author.id}")
-                        result = cursor.fetchone()
-                        points = result[0]
-                        await ctx.channel.send(f'{user.name} has {points} Points.')
-                        db.commit()
-                        cursor.close()
-                        db.close()
+
+        if str(ctx.channel) in channels:
+                db = sqlite3.connect('Test.sqlite')
+                cursor = db.cursor()
+                cursor.execute(f"Select Points FROM Points WHERE User_ID = {ctx.message.author.id}")
+                result = cursor.fetchone()
+                points = result[0]
+                await ctx.channel.send(f'{user.name} has {points} Points.')
+                db.commit()
+                cursor.close()
+                db.close()
                 
 
 #AddItems Command
-@bot.command()
+""" @bot.command()
 async def AddItem(ctx, item ,cost):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
@@ -232,10 +238,10 @@ async def AddItem(ctx, item ,cost):
                                 db.commit()
                                 cursor.close()
                                 db.close()
-                                await ctx.channel.send(f'{item} Has been added for {cost} points.')
+                                await ctx.channel.send(f'{item} Has been added for {cost} points.') """
 
 #RemoveItem Command
-@bot.command()
+""" @bot.command()
 async def RemoveItem(ctx, item):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
@@ -244,21 +250,21 @@ async def RemoveItem(ctx, item):
                 if str(ctx.channel) in channels:
                         db = sqlite3.connect('Test.sqlite')
                         cursor = db.cursor()
-                        cursor.execute(f"Select cost FROM Items WHERE ItemName = '{item}'")
+                        cursor.execute(f"Select Item_ID FROM Items WHERE ItemName = '{item}'")
                         result = cursor.fetchone()
                         if result is None: 
                                 await ctx.channel.send(f'That item does not Exists.')
                         elif result is not None:
-                                sql = (f"Delete FROM Items Where ItemName = ?")
-                                val = (item)
+                                sql = (f"Delete FROM Items Where Item_ID = ?")
+                                val = (result[0],)
                                 cursor.execute(sql,val)
-                                print(f"{item}' deleted'")
+                                print(f"{item}' deleted item_id' {result[0]} ")
                                 db.commit
                                 cursor.close()
-                                db.close
+                                db.close """
 
 #store command
-@bot.command()
+""" @bot.command()
 async def Store(ctx): 
         channels = ['dkp']
         if ctx.message.author.guild_permissions.send_messages:
@@ -274,10 +280,10 @@ async def Store(ctx):
                         d = '```'+'\n'.join(s) + '```'
                         embed = discord.Embed(title = 'Store Inventory', colour=discord.Colour(0x0ECA14), description = d)
                         embed.set_thumbnail(url='https://cdn.discordapp.com/icons/184864850059460609/293ef38d13267880ba274086a16e7593.png?size=32')
-                        await ctx.channel.send(embed = embed)
+                        await ctx.channel.send(embed = embed) """
 
 #MyInventory Command
-@bot.command()
+""" @bot.command()
 async def MyInventory(ctx):
     # Example dataset here! 
         channels = ['dkp']
@@ -293,11 +299,11 @@ async def MyInventory(ctx):
                         d = '```'+'\n'.join(s) + '```'
                         embed = discord.Embed(title = 'Personal Inventory', colour=discord.Colour(0x0ECA14), description = d)
                         embed.set_thumbnail(url='https://cdn.discordapp.com/icons/184864850059460609/293ef38d13267880ba274086a16e7593.png?size=32')
-                        await ctx.channel.send(embed = embed)
+                        await ctx.channel.send(embed = embed) """
                         
 
 #BuyItems Command
-@bot.command()
+""" @bot.command()
 async def BuyItem(ctx, item):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
@@ -309,7 +315,7 @@ async def BuyItem(ctx, item):
                         cursor = db.cursor()
                         cursor.execute(f"Select cost FROM Items WHERE ItemName = '{item}'")
                         price = cursor.fetchone()
-                        cursor.execute(f"Select Points FROM Test WHERE User_ID = {ctx.message.author.id}")
+                        cursor.execute(f"Select Points FROM Points WHERE User_ID = {ctx.message.author.id}")
                         points = cursor.fetchone()
                         cursor.execute(f"Select Count FROM Inventory WHERE ItemName = '{item}' AND User_ID = {ctx.message.author.id}")
                         itemcount = cursor.fetchone()
@@ -321,7 +327,7 @@ async def BuyItem(ctx, item):
                         elif balance < 0:
                                 await ctx.channel.send(f'You do not have enough points purchase this item.')
                         elif balance >= 0:
-                                sql = ("UPDATE Test SET Points = ? WHERE User_ID = ?")
+                                sql = ("UPDATE Points SET Points = ? WHERE User_ID = ?")
                                 val = (balance,ctx.message.author.id) 
                                 cursor.execute(sql,val) 
                                 db.commit()
@@ -340,9 +346,13 @@ async def BuyItem(ctx, item):
                                         db.commit()
                                 cursor.close()
                                 db.close()
-                                await ctx.channel.send(f'{ctx.message.author.name} has purchased {item} and has {balance} remaining points left. They now have {newcount} {item}(s)') 
+                                await ctx.channel.send(f'{ctx.message.author.name} has purchased {item} and has {balance} remaining points left. They now have {newcount} {item}(s)')  """
+
+
+
+
 #ItemCost Command
-@bot.command()
+""" @bot.command()
 async def ItemCost(ctx, item):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
@@ -356,25 +366,7 @@ async def ItemCost(ctx, item):
                         if result is not None:
                                 await ctx.channel.send(f'The {item} costs {result[0]} points.')
                         else: 
-                                await ctx.channel.send(f'That Item Does Not Exists.')
-
-#UserPoints Command
-@bot.command()
-async def userpoints(ctx, user: discord.Member):
-        id = bot.get_guild(877528142909161572)
-        channels = ['dkp']
- 
-        if ctx.message.author.guild_permissions.send_messages:
-                if str(ctx.channel) in channels:
-                        db = sqlite3.connect('Test.sqlite')
-                        cursor = db.cursor()
-                        cursor.execute(f"Select Points FROM Test WHERE User_ID = {user.id}")
-                        result = cursor.fetchone()
-                        points = result[0]
-                        await ctx.channel.send(f'{user.name} has {points} Points.')
-                        db.commit()
-                        cursor.close()
-                        db.close()
+                                await ctx.channel.send(f'That Item Does Not Exists.') """
 
 
 #on_connect
@@ -387,10 +379,10 @@ async def on_connect():
 async def on_ready():
         db = sqlite3.connect('Test.sqlite')
         cursor = db.cursor()
-        cursor.execute('''CREATE TABLE IF NOT EXISTS Test(
+        cursor.execute('''CREATE TABLE IF NOT EXISTS Points(
                 guild_id Text,
                 points Int,
-                user_ID Int
+        user_ID Int
                 )
                 ''')
         db.commit()
