@@ -20,6 +20,7 @@ from sqlite3.dbapi2 import Cursor
 from typing_extensions import Concatenate
 import discord
 import logging
+import logging.handlers
 from discord.ext import commands
 import sqlite3
 
@@ -31,14 +32,13 @@ intents.typing = True
 intents.presences = True
 bot = commands.Bot(command_prefix='$', case_insensitive=True, intents=intents)
 token = read_token()
-logger = logging.getLogger('discord')
-handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
-
-
-#Debug Logging
+Logger = logging.getLogger('discord')
+handler = logging.FileHandler(filename='discord.log', encoding=None, mode='w')
+logger = logging.getLogger("")
 logger.setLevel(logging.DEBUG)
-handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler) 
+formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+handler.setFormatter(formatter)
+logger.addHandler(handler)
 
 #Ping Command
 @bot.command()
@@ -71,12 +71,12 @@ async def helpme(ctx):
                 embed.add_field(name='$ShowPoints <UsersName>', value='Shows users how many points they have ')
                 embed.add_field(name='$RemovePoints <Amount> <UsersName>', value='Allows admins to remove points from the user ')
                 embed.add_field(name='$RemoveAllPoints <UsersName>', value='Allows admins to remove all points from the user ')
-                #embed.add_field(name='$UserPoints <UsersName>', value='Points for the specified user ')
-                #embed.add_field(name='$AddItem <Item Name> <Item Cost>', value='Adds an item to the store')
-                #embed.add_field(name='$BuyItem <ItemName>', value='Buy an Item from the store')
-                #embed.add_field(name='$ItemCost <ItemName>', value='Total cost for an item')
-                #embed.add_field(name='$Store', value='Displayes the items within the store.')
-                #embed.add_field(name='$MyInventory', value='Displays the items within your inventory')
+                embed.add_field(name='$UserPoints <UsersName>', value='Points for the specified user ')
+                embed.add_field(name='$AddItem <Item Name> <Item Cost>', value='Adds an item to the store')
+                embed.add_field(name='$BuyItem <ItemName>', value='Buy an Item from the store')
+                embed.add_field(name='$ItemCost <ItemName>', value='Total cost for an item')
+                embed.add_field(name='$Store', value='Displayes the items within the store.')
+                embed.add_field(name='$MyInventory', value='Displays the items within your inventory')
                 await ctx.channel.send(content=None, embed=embed)
 
 #Users Command
@@ -221,7 +221,7 @@ async def Showpoints(ctx, user: discord.Member):
                 
 
 #AddItems Command
-""" @bot.command()
+@bot.command()
 async def AddItem(ctx, item ,cost):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
@@ -242,10 +242,10 @@ async def AddItem(ctx, item ,cost):
                                 db.commit()
                                 cursor.close()
                                 db.close()
-                                await ctx.channel.send(f'{item} Has been added for {cost} points.') """
+                                await ctx.channel.send(f'{item} Has been added for {cost} points.')
 
 #RemoveItem Command
-""" @bot.command()
+@bot.command()
 async def RemoveItem(ctx, item):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
@@ -265,10 +265,10 @@ async def RemoveItem(ctx, item):
                                 print(f"{item}' deleted item_id' {result[0]} ")
                                 db.commit
                                 cursor.close()
-                                db.close """
+                                db.close
 
 #store command
-""" @bot.command()
+@bot.command()
 async def Store(ctx): 
         channels = ['dkp']
         if ctx.message.author.guild_permissions.send_messages:
@@ -284,10 +284,10 @@ async def Store(ctx):
                         d = '```'+'\n'.join(s) + '```'
                         embed = discord.Embed(title = 'Store Inventory', colour=discord.Colour(0x0ECA14), description = d)
                         embed.set_thumbnail(url='https://cdn.discordapp.com/icons/184864850059460609/293ef38d13267880ba274086a16e7593.png?size=32')
-                        await ctx.channel.send(embed = embed) """
+                        await ctx.channel.send(embed = embed)
 
 #MyInventory Command
-""" @bot.command()
+@bot.command()
 async def MyInventory(ctx):
     # Example dataset here! 
         channels = ['dkp']
@@ -303,11 +303,11 @@ async def MyInventory(ctx):
                         d = '```'+'\n'.join(s) + '```'
                         embed = discord.Embed(title = 'Personal Inventory', colour=discord.Colour(0x0ECA14), description = d)
                         embed.set_thumbnail(url='https://cdn.discordapp.com/icons/184864850059460609/293ef38d13267880ba274086a16e7593.png?size=32')
-                        await ctx.channel.send(embed = embed) """
+                        await ctx.channel.send(embed = embed)
                         
 
 #BuyItems Command
-""" @bot.command()
+@bot.command()
 async def BuyItem(ctx, item):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
@@ -350,13 +350,13 @@ async def BuyItem(ctx, item):
                                         db.commit()
                                 cursor.close()
                                 db.close()
-                                await ctx.channel.send(f'{ctx.message.author.name} has purchased {item} and has {balance} remaining points left. They now have {newcount} {item}(s)')  """
+                                await ctx.channel.send(f'{ctx.message.author.name} has purchased {item} and has {balance} remaining points left. They now have {newcount} {item}(s)') 
 
 
 
 
 #ItemCost Command
-""" @bot.command()
+@bot.command()
 async def ItemCost(ctx, item):
         id = bot.get_guild(877528142909161572)
         channels = ['dkp']
@@ -370,7 +370,7 @@ async def ItemCost(ctx, item):
                         if result is not None:
                                 await ctx.channel.send(f'The {item} costs {result[0]} points.')
                         else: 
-                                await ctx.channel.send(f'That Item Does Not Exists.') """
+                                await ctx.channel.send(f'That Item Does Not Exists.')
 
 
 #on_connect
