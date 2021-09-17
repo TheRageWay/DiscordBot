@@ -67,12 +67,12 @@ async def helpme(ctx):
                 embed.add_field(name='$ShowPoints <UsersName>', value='Shows users how many points they have ')
                 embed.add_field(name='$RemovePoints <Amount> <UsersName>', value='Allows admins to remove points from the user ')
                 embed.add_field(name='$RemoveAllPoints <UsersName>', value='Allows admins to remove all points from the user ')
-                embed.add_field(name='$UserPoints <UsersName>', value='Points for the specified user ')
-                embed.add_field(name='$AddItem <Item Name> <Item Cost>', value='Adds an item to the store')
-                embed.add_field(name='$BuyItem <ItemName>', value='Buy an Item from the store')
-                embed.add_field(name='$ItemCost <ItemName>', value='Total cost for an item')
-                embed.add_field(name='$Store', value='Displayes the items within the store.')
-                embed.add_field(name='$MyInventory', value='Displays the items within your inventory')
+                #embed.add_field(name='$UserPoints <UsersName>', value='Points for the specified user ')
+                #embed.add_field(name='$AddItem <Item Name> <Item Cost>', value='Adds an item to the store')
+                #embed.add_field(name='$BuyItem <ItemName>', value='Buy an Item from the store')
+                #embed.add_field(name='$ItemCost <ItemName>', value='Total cost for an item')
+                #embed.add_field(name='$Store', value='Displayes the items within the store.')
+                #embed.add_field(name='$MyInventory', value='Displays the items within your inventory')
                 await ctx.channel.send(content=None, embed=embed)
 
 #Users Command
@@ -216,7 +216,7 @@ async def Showpoints(ctx, user: discord.Member):
                 db.close()
                 
 
-#AddItems Command
+""" #AddItems Command
 @bot.command()
 async def AddItem(ctx, item ,cost):
         id = bot.get_guild(877528142909161572)
@@ -367,7 +367,7 @@ async def ItemCost(ctx, item):
                                 await ctx.channel.send(f'The {item} costs {result[0]} points.')
                         else: 
                                 await ctx.channel.send(f'That Item Does Not Exists.')
-
+ """
 
 #on_connect
 @bot.event
