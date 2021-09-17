@@ -1,4 +1,8 @@
 #Discord Bot for DKP System
+#Authors/Creators
+        #TheRageWay#5925
+        #LukeTheJuke24#4670
+
 
 #test server id = 877528142909161572
 
